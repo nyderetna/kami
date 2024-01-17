@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import StoreMenu from './StoreMenu';
 import ProcurementMenu from './ProcurementMenu';
 import TransferMenu from './TransferMenu';
@@ -9,12 +10,30 @@ import * as SecureStore from 'expo-secure-store';
 
 
 const LandingPage = ({ route, navigation }) => {
+  const [showSidebar, setShowSidebar] = useState(false);
   
   const { userData } = route.params;
 
   const { token } = userData;
 
-  //console.log('token landing page: ' + token);
+  const toggleSidebar = () => {
+    setShowSidebar(!showSidebar);
+    console.log('showSidebar:', showSidebar);
+  };
+
+  useEffect(() => {
+    navigation.setOptions({
+      title: 'Kami WMS',
+      headerLeft: () => (
+        <TouchableOpacity onPress={toggleSidebar} style={styles.hamburgerIcon}>
+          <Ionicons name={showSidebar ? 'md-close' : 'md-menu'} size={32} color="black" />
+        </TouchableOpacity>
+      ),
+      // ... (rest of your options)
+    });
+  }, [navigation, showSidebar]);
+
+  const sidebarStyles = [styles.sidebar, showSidebar ? styles.sidebarExpanded : styles.sidebarCollapsed];
 
   const storeApiKey = async () => {
     try {
@@ -111,7 +130,7 @@ const LandingPage = ({ route, navigation }) => {
   return (
     <View style={styles.container}>
           {/* Sidebar */}
-          <View style={styles.sidebar}>
+          <View style={sidebarStyles}>
             <ScrollView contentContainerStyle={styles.menu}>
               <TouchableOpacity onPress={handleStores}>
                 <Text style={styles.menuItem}>Stores</Text>
@@ -180,7 +199,18 @@ const styles = StyleSheet.create({
   },
   headerRight: {
     padding: 10
-  }
+  },
+  sidebarCollapsed: {
+    width: 0,
+    paddingTop: 0,
+  },
+  sidebarExpanded: {
+    width: 200,
+    paddingTop: 50,
+  },
+  hamburgerIcon: {
+    padding: 10,
+  },
 });
 
 export default LandingPage;

@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, Image, Text } from 'react-native';
-import SuccessModal from './SuccessModal';
+import { Alert } from 'react-native';
 
 // admin@kami.com
 const LoginScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showModal, setShowModal] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -15,6 +14,13 @@ const LoginScreen = ({ navigation }) => {
       title: '', // Set the title of the screen
     });
   }, [navigation]);
+
+  React.useEffect(() => {
+    if (successMessage) {
+      Alert.alert('Success!', successMessage);
+    }
+  }, [successMessage]);
+  
 
   const handleLogin = () => {
     fetch('https://app.kamiidea.com/api/rfid/login', {
@@ -35,19 +41,13 @@ const LoginScreen = ({ navigation }) => {
         }
       })
       .then(data => {
-        console.log(data);
-        setSuccessMessage(data.message); // Set success message from API response
-        setErrorMessage(''); // Clear any previous error message
-        // Show modal on successful login
-        setShowModal(true);
+        setSuccessMessage(data.successMessage);
+        Alert.alert('Success!', successMessage);
         // Redirect to another page on successful login
         navigation.navigate('LandingPage', { userData: data });
-        
       })
       .catch(error => {
-        setErrorMessage('Login failed'); // Set error message on login failure
-        setSuccessMessage(''); // Clear any previous success message
-        setShowModal(true); // Show modal on login failure
+        Alert.alert('Failed!', error.errorMessage);
         console.error('Login failed:', error);
       });
   };
@@ -77,12 +77,6 @@ const LoginScreen = ({ navigation }) => {
           <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
       </View>
-      <SuccessModal
-        visible={showModal}
-        successMessage={successMessage}
-        errorMessage={errorMessage}
-        onClose={() => setShowModal(false)}
-      />
     </View>
   );
 }; 
