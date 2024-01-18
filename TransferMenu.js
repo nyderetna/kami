@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-
 import { Ionicons } from '@expo/vector-icons';
 import TransferPost from './TransferPost';
 
-const TransferMenu = ( token ) => {
+const TransferMenu = () => {
   const [transfers, setTransfers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -21,8 +20,7 @@ const TransferMenu = ( token ) => {
           },
         });
         const data = await response.json();
-        setTransfers(data.data);
-        //console.log(data);
+        setTransfers(data.data || []); // Initialize with an empty array if data.data is falsy
       } catch (error) {
         console.error('Error fetching transfers:', error);
       }
@@ -31,17 +29,17 @@ const TransferMenu = ( token ) => {
     fetchTransfers();
   }, []);
 
-  const [showTransferPost, setShowTransferPost] = useState(false); // State to control TransferPost visibility
+  const [showTransferPost, setShowTransferPost] = useState(false);
 
   const handleTransferPost = () => {
-    setShowTransferPost(true); // Show TransferPost component
+    setShowTransferPost(true);
   };
 
   const handleBackToMenu = () => {
-    setShowTransferPost(false); // Hide TransferPost component
+    setShowTransferPost(false);
   };
 
-  const filteredTransfers = transfers.filter(transfer =>
+  const filteredTransfers = transfers && transfers.filter(transfer =>
     transfer.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -54,7 +52,6 @@ const TransferMenu = ( token ) => {
   );
 
   const renderTransferMenu = () => {
-    // Render TransferMenu content
     return (
       <View style={styles.container}>
         <Text style={styles.title}>Transfers</Text>
@@ -69,7 +66,7 @@ const TransferMenu = ( token ) => {
           onChangeText={text => setSearchQuery(text)}
         />
         <FlatList
-          data={filteredTransfers}
+          data={filteredTransfers || []}
           renderItem={renderTransferItem}
           keyExtractor={item => item.id.toString()}
         />
@@ -78,10 +75,8 @@ const TransferMenu = ( token ) => {
   };
 
   return showTransferPost ? (
-    // If showTransferPost is true, render TransferPost
     <TransferPost handleBackToMenu={handleBackToMenu} />
   ) : (
-    // If showTransferPost is false, render TransferMenu
     renderTransferMenu()
   );
 };

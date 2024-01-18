@@ -81,13 +81,13 @@ const ProcurementPost = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    //justifyContent: 'center',
+    //alignItems: 'center',
     paddingHorizontal: 20,
   },
   itemsContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
+    //alignItems: 'center',
     marginBottom: 20,
   },
   input: {

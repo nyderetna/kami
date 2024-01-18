@@ -49,12 +49,12 @@ const ShippingMenu = ( token ) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    //alignItems: 'center',
+    //justifyContent: 'center',
     padding: 20,
   },
   input: {
-    width: '80%',
+    width: '100%',
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,

@@ -11,8 +11,8 @@ const ProcurementMenu = ({ route,token }) => {
 
   useEffect(() => {
     const fetchProcurements = async () => {
-      const token = await SecureStore.getItemAsync('apiKey');
-      console.log(token);
+      // const token = await SecureStore.getItemAsync('apiKey');
+      // console.log(token);
       try {
         const response = await fetch('https://app.kamiidea.com/api/rfid/procurements', {
           headers: {

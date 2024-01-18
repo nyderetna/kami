@@ -8,18 +8,16 @@ import ShippingMenu from './ShippingMenu';
 import PosMenu from './PosMenu';
 import * as SecureStore from 'expo-secure-store';
 
-
 const LandingPage = ({ route, navigation }) => {
   const [showSidebar, setShowSidebar] = useState(false);
-  
   const { userData } = route.params;
-
   const { token } = userData;
 
   const toggleSidebar = () => {
     setShowSidebar(!showSidebar);
-    console.log('showSidebar:', showSidebar);
   };
+
+  console.log(token);
 
   useEffect(() => {
     navigation.setOptions({
@@ -35,65 +33,44 @@ const LandingPage = ({ route, navigation }) => {
 
   const sidebarStyles = [styles.sidebar, showSidebar ? styles.sidebarExpanded : styles.sidebarCollapsed];
 
+  const menuItems = [
+    { name: 'Stores', icon: 'pin' },
+    { name: 'Procurements', icon: 'basket' },
+    { name: 'Transfers', icon: 'swap-horizontal' },
+    { name: 'Shipping', icon: 'boat' },
+    { name: 'Pos', icon: 'cash' },
+  ];
+
   const storeApiKey = async () => {
     try {
       await SecureStore.setItemAsync('apiKey', token);
-
       console.log('API Key stored successfully');
     } catch (error) {
       console.log('Error storing API Key: ', error);
-
     }
   };
 
-  const [showStores, setShowStores] = useState(false); // State to control StoreMenu visibility
-  const [showProcurements, setShowProcurements] = useState(false); // State to control Proc visibility
-  const [showTransfers, setShowTransfers] = useState(false);
-  const [showShipping, setShowShipping] = useState(false);
-  const [showPos, setShowPos] = useState(false);
+  const [selectedMenu, setSelectedMenu] = useState(null);
 
-  React.useLayoutEffect(() => {
-    navigation.setOptions({
-      title: 'Kami WMS', // Set the title of the screen
-      headerLeft: null, // Hide the back button in the header
-      headerRight: () => (
-        <View style={styles.headerRight}>
-            <Text>Store ID: {userData.store_id}</Text>
-        </View>
-      ),
-    });
-  }, [navigation]);
-
-  const handleProcurements = () => {
-    setShowProcurements(true);
-    setShowStores(false);
+  const handleMenuClick = (menuName) => {
+    setSelectedMenu(menuName);
   };
 
-  const handleStores = () => {
-    setShowStores(true);
-    setShowProcurements(false);
-  };
-
-  const handleTransfers = () => {
-    setShowTransfers(true);
-    setShowStores(false);
-    setShowProcurements(false);
-  };
-
-  const handleShipping = () => {
-    setShowShipping(true);
-    setShowStores(false);
-    setShowProcurements(false);
-    setShowTransfers(false);
-  };
-
-  const handlePos = () => {
-    setShowPos(true);
-    setShowStores(false);
-    setShowProcurements(false);
-    setShowTransfers(false);
-    setShowShipping(false);
-
+  const renderMenuContent = (selectedMenu) => {
+    switch (selectedMenu) {
+      case 'Stores':
+        return <StoreMenu />;
+      case 'Procurements':
+        return <ProcurementMenu token={token} />;
+      case 'Transfers':
+        return <TransferMenu token={token} />;
+      case 'Shipping':
+        return <ShippingMenu token={token} />;
+      case 'Pos':
+        return <PosMenu token={token} />;
+      default:
+        return null;
+    }
   };
 
   const handleLogout = async () => {
@@ -112,11 +89,11 @@ const LandingPage = ({ route, navigation }) => {
         // Perform any actions necessary upon successful logout
         // Clear userData and navigate to Login screen
         navigation.reset({
-            index: 0,
-            routes: [{ name: 'Login' }],
+          index: 0,
+          routes: [{ name: 'Login' }],
         });
         // For example, navigate back to the login screen
-        navigation.navigate('Login'); 
+        navigation.navigate('Login');
       } else {
         console.error('Logout failed');
         // Handle logout failure
@@ -129,39 +106,29 @@ const LandingPage = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-          {/* Sidebar */}
-          <View style={sidebarStyles}>
-            <ScrollView contentContainerStyle={styles.menu}>
-              <TouchableOpacity onPress={handleStores}>
-                <Text style={styles.menuItem}>Stores</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleProcurements}>
-                <Text style={styles.menuItem}>Procurements</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={handleTransfers}>
-            <Text style={styles.menuItem}>Transfers</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleShipping}> 
-            <Text style={styles.menuItem}>Shipping</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handlePos}> 
-            <Text style={styles.menuItem}>Pos</Text>
-          </TouchableOpacity>
-              {/* Other menu items */}
-            </ScrollView>
-            <TouchableOpacity onPress={handleLogout} style={styles.logout}>
-              <Text style={styles.menuItem}>Logout</Text>
+      {/* Sidebar */}
+      <View style={sidebarStyles}>
+        <ScrollView contentContainerStyle={styles.menu}>
+          {menuItems.map((menuItem, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => handleMenuClick(menuItem.name)}
+              style={styles.menuItem}
+            >
+              <Ionicons name={menuItem.icon} size={24} color="black" style={styles.menuIcon} />
+              <Text>{menuItem.name}</Text>
             </TouchableOpacity>
-          </View>
-          <View>
-            {/* Main Content */}
-            {showStores && <StoreMenu />}
-            {showProcurements && <ProcurementMenu token={token} />}
-            {showTransfers && <TransferMenu token={token} />}
-            {showShipping && <ShippingMenu token={token} />}
-            {showPos && <PosMenu token={token} />}
-            {/* Other menu components */}
-          </View>
+          ))}
+        </ScrollView>
+        <TouchableOpacity onPress={handleLogout} style={styles.logout}>
+          <Text style={styles.menuItem}>Logout</Text>
+        </TouchableOpacity>
+      </View>
+      <View>
+        {/* Main Content */}
+        {renderMenuContent(selectedMenu)}
+        {/* Other menu components */}
+      </View>
     </View>
   );
 };
@@ -183,6 +150,8 @@ const styles = StyleSheet.create({
   },
   menuItem: {
     padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   logout: {
     position: 'absolute',
@@ -198,7 +167,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   headerRight: {
-    padding: 10
+    padding: 10,
   },
   sidebarCollapsed: {
     width: 0,
@@ -210,6 +179,9 @@ const styles = StyleSheet.create({
   },
   hamburgerIcon: {
     padding: 10,
+  },
+  menuIcon: {
+    marginRight: 10,
   },
 });
 

@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { BleManager } from 'react-native-ble-plx';
+import BleManagerInstance from '../services/BleManagerInstance';
 
-const PosMenu = ( token ) => {
+const PosMenu = (token) => {
   const [isBluetoothOn, setIsBluetoothOn] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [peripherals, setPeripherals] = useState([]);
-  const manager = new BleManager();
 
   useEffect(() => {
     checkBluetoothStatus();
     return () => {
-      manager.destroy();
+      BleManagerInstance.destroy(); // Use BleManagerInstance instead of new BleManager()
     };
   }, []);
 
   const checkBluetoothStatus = async () => {
-    const state = await manager.state();
+    const state = await BleManagerInstance.state(); // Use BleManagerInstance instead of new BleManager()
     setIsBluetoothOn(state === 'PoweredOn');
   };
 
@@ -24,26 +23,26 @@ const PosMenu = ( token ) => {
     if (!isBluetoothOn || scanning) return;
 
     setScanning(true);
-    manager.startDeviceScan(null, null, (error, device) => {
+    BleManagerInstance.startDeviceScan(null, null, (error, device) => {
       if (error) {
         console.error('Error scanning:', error);
         return;
       }
 
       if (device) {
-        setPeripherals(peripherals => [...peripherals, device]);
+        setPeripherals((peripherals) => [...peripherals, device]);
       }
     });
   };
 
-  const connectToDevice = async deviceId => {
+  const connectToDevice = async (deviceId) => {
     if (!isBluetoothOn) return;
 
-    manager.stopDeviceScan();
+    BleManagerInstance.stopDeviceScan(); // Use BleManagerInstance instead of new BleManager()
     setScanning(false);
 
     try {
-      const device = await manager.connectToDevice(deviceId);
+      const device = await BleManagerInstance.connectToDevice(deviceId); // Use BleManagerInstance instead of new BleManager()
       // Handle device connection
     } catch (error) {
       console.error('Error connecting to device:', error);
@@ -57,10 +56,12 @@ const PosMenu = ( token ) => {
         style={[styles.button, !isBluetoothOn && styles.disabled]}
         onPress={startScan}
         disabled={!isBluetoothOn}>
-        <Text style={styles.buttonText}>{scanning ? 'Scanning...' : 'Scan for Devices'}</Text>
+        <Text style={styles.buttonText}>
+          {scanning ? 'Scanning...' : 'Scan for Devices'}
+        </Text>
       </TouchableOpacity>
       <View style={styles.deviceList}>
-        {peripherals.map(device => (
+        {peripherals.map((device) => (
           <TouchableOpacity
             key={device.id}
             style={styles.deviceItem}
