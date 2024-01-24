@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import BleManagerInstance from '../services/BleManagerInstance';
+import { Bluetooth } from 'expo-bluetooth';
 
-const PosMenu = (token) => {
+const PosMenu = () => {
   const [isBluetoothOn, setIsBluetoothOn] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [peripherals, setPeripherals] = useState([]);
@@ -10,44 +10,43 @@ const PosMenu = (token) => {
   useEffect(() => {
     checkBluetoothStatus();
     return () => {
-      BleManagerInstance.destroy(); // Use BleManagerInstance instead of new BleManager()
+      // Clean up any Bluetooth related tasks if needed
     };
   }, []);
 
   const checkBluetoothStatus = async () => {
-    const state = await BleManagerInstance.state(); // Use BleManagerInstance instead of new BleManager()
-    setIsBluetoothOn(state === 'PoweredOn');
+    try {
+      const status = await Bluetooth.getBluetoothState();
+      setIsBluetoothOn(status === 'on');
+    } catch (error) {
+      console.error('Error checking Bluetooth status:', error);
+    }
   };
 
   const startScan = async () => {
-    if (!isBluetoothOn || scanning) return;
-
-    setScanning(true);
-    BleManagerInstance.startDeviceScan(null, null, (error, device) => {
-      if (error) {
-        console.error('Error scanning:', error);
-        return;
-      }
-
-      if (device) {
-        setPeripherals((peripherals) => [...peripherals, device]);
-      }
-    });
-  };
-
-  const connectToDevice = async (deviceId) => {
-    if (!isBluetoothOn) return;
-
-    BleManagerInstance.stopDeviceScan(); // Use BleManagerInstance instead of new BleManager()
-    setScanning(false);
-
     try {
-      const device = await BleManagerInstance.connectToDevice(deviceId); // Use BleManagerInstance instead of new BleManager()
-      // Handle device connection
+      const isEnabled = await Bluetooth.requestEnable();
+      if (isEnabled) {
+        setScanning(true);
+        Bluetooth.startScan(null, null, (error, device) => {
+          if (error) {
+            console.error('Error scanning:', error);
+            return;
+          }
+
+          if (device) {
+            setPeripherals((prevPeripherals) => [...prevPeripherals, device]);
+          }
+        });
+      } else {
+        console.warn('Bluetooth is not enabled.');
+      }
     } catch (error) {
-      console.error('Error connecting to device:', error);
+      console.error('Error starting scan:', error);
     }
   };
+
+  // ... rest of your component code
 
   return (
     <View style={styles.container}>
@@ -56,9 +55,7 @@ const PosMenu = (token) => {
         style={[styles.button, !isBluetoothOn && styles.disabled]}
         onPress={startScan}
         disabled={!isBluetoothOn}>
-        <Text style={styles.buttonText}>
-          {scanning ? 'Scanning...' : 'Scan for Devices'}
-        </Text>
+        <Text style={styles.buttonText}>{scanning ? 'Scanning...' : 'Scan for Devices'}</Text>
       </TouchableOpacity>
       <View style={styles.deviceList}>
         {peripherals.map((device) => (
@@ -79,8 +76,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   title: {
     fontSize: 24,

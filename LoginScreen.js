@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet, Image, Text } from 'react-native';
-import { Alert } from 'react-native';
+import { View, TextInput, TouchableOpacity, StyleSheet, Image, Text, Alert } from 'react-native';
 
 // admin@kami.com
 const LoginScreen = ({ navigation }) => {
@@ -17,7 +16,7 @@ const LoginScreen = ({ navigation }) => {
 
   React.useEffect(() => {
     if (successMessage) {
-      Alert.alert('Success!', successMessage);
+      Alert.alert('Success!', data.successMessage);
     }
   }, [successMessage]);
   
@@ -42,12 +41,12 @@ const LoginScreen = ({ navigation }) => {
       })
       .then(data => {
         setSuccessMessage(data.successMessage);
-        Alert.alert('Success!', successMessage);
+        Alert.alert('Success!', data.successMessage);
         // Redirect to another page on successful login
         navigation.navigate('LandingPage', { userData: data });
       })
       .catch(error => {
-        Alert.alert('Failed!', error.errorMessage);
+        Alert.alert('Failed!', errorData.errorMessage || 'Login failed');
         console.error('Login failed:', error);
       });
   };

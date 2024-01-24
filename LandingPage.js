@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import StoreMenu from './StoreMenu';
 import ProcurementMenu from './ProcurementMenu';
@@ -17,7 +17,7 @@ const LandingPage = ({ route, navigation }) => {
     setShowSidebar(!showSidebar);
   };
 
-  console.log(token);
+  //console.log(token);
 
   useEffect(() => {
     navigation.setOptions({
@@ -85,22 +85,20 @@ const LandingPage = ({ route, navigation }) => {
       });
 
       if (response.ok) {
-        console.log('Logout successful');
-        // Perform any actions necessary upon successful logout
-        // Clear userData and navigate to Login screen
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Login' }],
-        });
-        // For example, navigate back to the login screen
-        navigation.navigate('Login');
+        // Show success message using Alert
+        Alert.alert('Logout Successful', 'You have been logged out.', [
+          { text: 'OK', onPress: () => handleLogoutSuccess() },
+        ]);
       } else {
-        console.error('Logout failed');
-        // Handle logout failure
+        const errorData = await response.json();
+        // Show error message using Alert
+        Alert.alert('Logout Failed', errorData.errorMessage || 'An error occurred during logout.');
+        console.error('Logout failed:', errorData);
       }
     } catch (error) {
+      // Show generic error message using Alert
+      Alert.alert('Logout Error', 'An error occurred during logout.');
       console.error('Logout error:', error);
-      // Handle logout error
     }
   };
 

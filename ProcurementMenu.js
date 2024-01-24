@@ -22,7 +22,7 @@ const ProcurementMenu = ({ route,token }) => {
           },
         });
         const data = await response.json();
-        console.log(data);
+        //console.log(data);
         if (data && data.data) {
           setProcurements(data.data); // Set procurements only if data.data exists
         } else {
